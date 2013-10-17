@@ -58,6 +58,8 @@ class ITCApplication(ITCImageUploader):
 
     def getAppInfo(self):
         if self.applicationLink == None:
+            self.applicationLink = self._parser.parseApplicationLink(self.applicationId)
+        if self.applicationLink == None:
             raise 'Can\'t get application versions'
 
         tree = self._parser.parseTreeForURL(self.applicationLink)
