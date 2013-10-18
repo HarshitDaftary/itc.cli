@@ -19,7 +19,7 @@ Have you ever had to create 1000 inapp purchases by template? Or may be to uploa
 &bull; [Create new application version](#create-new-application-version)  
 &bull; [Promo codes](#promo-codes)  
 &bull; [Reviews](#reviews)  
-&bull; [Waiting for Upload](#binary)  
+&bull; [Waiting for Upload](#waiting-for-upload)  
 &bull; [Logging](#logging)  
 &bull; [Roadmap](#roadmap)  
 &bull; [License](#license)  
@@ -445,7 +445,7 @@ Date format could be ````dd/mm/yyyy````, ````today````, ````yesterday```` or a n
 Waiting for Upload
 =======
 
-Use ````binary```` command, to setup your app in waiting for Upload state:  
+Use ````binary```` command, to setup your app in Waiting for Upload state:  
 ````./itc/bin/itc binary -a APP_ID````
 
 It will answer NO to the question "Does you app use cryptography?". If you need to answer YES to that question, you'll need to do it manually.
