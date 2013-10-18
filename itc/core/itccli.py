@@ -8,6 +8,7 @@ Usage:
     itc generate [-a APP_ID] [-e APP_VER] [-i] [-c FILE] [-n] [-u USERNAME] [-p PASSWORD] [-z] [-v | -vv [-f] | -s]
     itc promo -a APP_ID [-n] [-u USERNAME] [-p PASSWORD] [-z] [-v | -vv [-f] | -s] [-o FILE] <amount>
     itc reviews -a APP_ID [-d DATE] [-l] [-n] [-u USERNAME] [-p PASSWORD] [-z] [-v | -vv [-f] | -s] [-o FILE]
+    itc binary -a APP_ID [-e APP_VER] [-n] [-u USERNAME] [-p PASSWORD] [-z] [-v | -vv [-f] | -s]
     itc (-h | --help)
 
 Commands:
@@ -19,6 +20,8 @@ Commands:
                                 applications will be created.
   promo                       Download specified <amount> of promocodes.
   reviews                     Get reviews for a specified application.
+  binary                      Change status of the given app to waiting for upload.
+                                It would answer NO to the "uses cryptography" question.
 
 Options:
   -h --help                   Print help (this message) and exit.
@@ -190,6 +193,15 @@ def main():
         else:
             application = server.applications[options['--application-id']]
             application.generateReviews(options['--latest-version'], options['--date-range'], options['--output-file'])
+
+        return
+
+    if options['binary']:
+        if not options['--application-id'] in server.applications: 
+            logging.error("Provide correct application id (--application-id or -a option)")
+        else:
+            application = server.applications[options['--application-id']]
+            application.readyToUploadBinary(options['--application-version'])
 
         return
 

@@ -58,8 +58,8 @@ class ITCApplicationParser(BaseParser):
         customerReviewsLink = None
         if (len(customerReviewsLinkTree) > 0):
             customerReviewsLink = customerReviewsLinkTree[0]
+            logging.debug("Customer reviews link: " + customerReviewsLink)
         logging.debug("Manage In-App purchases link: " + manageInappsLink)
-        logging.debug("Customer reviews link: " + manageInappsLink)
 
         versionsContainer = htmlTree.xpath("//h2[.='Versions']/following-sibling::div")
         if len(versionsContainer) == 0:
@@ -278,6 +278,26 @@ class ITCApplicationParser(BaseParser):
         metadata = PromoPageInfo(agreeTickName=agreeTickName
                                , continueButton=continueButton
                                , submitAction=submitAction)
+
+        return metadata
+
+    def parseReadyToUploadBinary(self, htmlTree):
+        tree = htmlTree
+        UploadBinary = namedtuple('UploadBinary', ['continueButton', 'submitAction'])
+        continueButton = tree.xpath("//input[@class='customActionButton']/@name")[0].strip()
+        submitAction = tree.xpath('//form[@name="mainForm"]/@action')[0]
+        metadata = UploadBinary(continueButton=continueButton
+                              , submitAction=submitAction)
+
+        return metadata
+
+    def parseSaveExportCompatibility(self, pageText):
+        tree = self.parser.parse(pageText)
+        ExportCompatibility = namedtuple('ExportCompatibility', ['continueButton', 'submitAction'])
+        continueButton = tree.xpath("//input[@class='saveChangesActionButton']/@name")[0].strip()
+        submitAction = tree.xpath('//form[@name="mainForm"]/@action')[0]
+        metadata = ExportCompatibility(continueButton=continueButton
+                                     , submitAction=submitAction)
 
         return metadata
 

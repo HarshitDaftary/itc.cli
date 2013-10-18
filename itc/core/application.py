@@ -636,3 +636,29 @@ class ITCApplication(ITCImageUploader):
                 json.dump(reviews, fp, sort_keys=False, indent=4, separators=(',', ': '))
         else:
             print reviews
+
+################## Upload Binary ##################
+    def readyToUploadBinary(self, versionString=None):
+        logging.debug('Changing status to waiting for review')
+        if len(self.versions) == 0:
+            self.getAppInfo()
+        if len(self.versions) == 0:
+            raise 'Can\'t get application versions'
+
+        if versionString == None:
+            versionString = next((versionString for versionString, version in self.versions.items() if version['editable']), None)
+        if versionString == None: # Suppose there's one or less editable versions
+            raise 'No editable version found'
+
+        version = self.versions[versionString]
+        if not version['editable']:
+            raise 'Version ' + versionString + ' is not editable.'
+
+        tree = self._parser.parseTreeForURL(version['detailsLink'])
+        logging.debug('Clicking Ready To Upload Binary')
+        metadata = self._parser.parseReadyToUploadBinary(tree)
+        formData = {metadata.continueButton + '.x': 46, metadata.continueButton + '.y': 10}
+        postFormResponse = self._parser.requests_session.post(ITUNESCONNECT_URL + metadata.submitAction, data = formData, cookies=cookie_jar)
+        metadata = self._parser.parseSaveExportCompatibility(postFormResponse.content)
+        formData = {metadata.continueButton + '.x': 46, metadata.continueButton + '.y': 10, 'firstQuestionRadio': 'false'}
+        postFormResponse = self._parser.requests_session.post(ITUNESCONNECT_URL + metadata.submitAction, data = formData, cookies=cookie_jar)
