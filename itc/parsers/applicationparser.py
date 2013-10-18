@@ -8,11 +8,46 @@ from datetime import datetime
 from itc.parsers.baseparser import BaseParser
 from itc.util import getElement
 from itc.util import languages
+from itc.conf import *
 
 class ITCApplicationParser(BaseParser):
     def __init__(self):
         super(ITCApplicationParser, self).__init__()
 
+    
+    def parseApplicationLink(self, applicationId):
+        logging.debug("Starting navigation from main page")
+        mainPageTree = self.parseTreeForURL(ITUNESCONNECT_MAIN_PAGE_URL)
+        manageAppsLink = mainPageTree.xpath("//a[.='Manage Your Apps']")
+        if len(manageAppsLink) == 0:
+            raise
+        manageAppsURL = manageAppsLink[0].attrib['href']
+        logging.debug("Searching for app")
+        appsSearchFormTree = self.parseTreeForURL(manageAppsURL)
+        searchForm = appsSearchFormTree.xpath("//div[@class='searchWrapper']/form")[0]
+        submitAction = searchForm.attrib['action']
+        formData = {}
+        # Search by the apple id
+        fieldName = appsSearchFormTree.xpath("//td[@class='search-param-value-appleId']/input/@name")[0]
+        formData[fieldName] = applicationId
+        # Add the select fields to the request, server is expecting them
+        selectFields = searchForm.xpath(".//select")
+        for selectField in selectFields:
+            formData[selectField.attrib['name']] = selectField.xpath(".//option")[0].attrib['value']
+        appsListTree = self.parseTreeForURL(submitAction, method="POST", payload=formData)
+        applicationRows = appsListTree.xpath("//div[@id='software-result-list'] \
+                            /div[@class='resultList']/table/tbody/tr[not(contains(@class, 'column-headers'))]")
+        for applicationRow in applicationRows:
+            tds = applicationRow.xpath("td")
+            nameLink = tds[0].xpath(".//a")
+            name = nameLink[0].text.strip()
+            link = nameLink[0].attrib["href"]
+            appIdInList = int(tds[4].xpath(".//p")[0].text.strip())
+            if (appIdInList==applicationId):
+                logging.debug("Link found: " + link)
+                return link
+        logging.debug("Didn\'t find the link")
+        return None
     
     def parseAppVersionsPage(self, htmlTree):
         AppVersions = namedtuple('AppVersions', ['manageInappsLink', 'customerReviewsLink', 'addVersionLink', 'versions'])
@@ -23,8 +58,8 @@ class ITCApplicationParser(BaseParser):
         customerReviewsLink = None
         if (len(customerReviewsLinkTree) > 0):
             customerReviewsLink = customerReviewsLinkTree[0]
+            logging.debug("Customer reviews link: " + customerReviewsLink)
         logging.debug("Manage In-App purchases link: " + manageInappsLink)
-        logging.debug("Customer reviews link: " + manageInappsLink)
 
         versionsContainer = htmlTree.xpath("//h2[.='Versions']/following-sibling::div")
         if len(versionsContainer) == 0:
@@ -243,6 +278,26 @@ class ITCApplicationParser(BaseParser):
         metadata = PromoPageInfo(agreeTickName=agreeTickName
                                , continueButton=continueButton
                                , submitAction=submitAction)
+
+        return metadata
+
+    def parseReadyToUploadBinary(self, htmlTree):
+        tree = htmlTree
+        UploadBinary = namedtuple('UploadBinary', ['continueButton', 'submitAction'])
+        continueButton = tree.xpath("//input[@class='customActionButton']/@name")[0].strip()
+        submitAction = tree.xpath('//form[@name="mainForm"]/@action')[0]
+        metadata = UploadBinary(continueButton=continueButton
+                              , submitAction=submitAction)
+
+        return metadata
+
+    def parseSaveExportCompatibility(self, pageText):
+        tree = self.parser.parse(pageText)
+        ExportCompatibility = namedtuple('ExportCompatibility', ['continueButton', 'submitAction'])
+        continueButton = tree.xpath("//input[@class='saveChangesActionButton']/@name")[0].strip()
+        submitAction = tree.xpath('//form[@name="mainForm"]/@action')[0]
+        metadata = ExportCompatibility(continueButton=continueButton
+                                     , submitAction=submitAction)
 
         return metadata
 

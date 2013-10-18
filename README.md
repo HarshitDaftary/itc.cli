@@ -19,6 +19,7 @@ Have you ever had to create 1000 inapp purchases by template? Or may be to uploa
 &bull; [Create new application version](#create-new-application-version)  
 &bull; [Promo codes](#promo-codes)  
 &bull; [Reviews](#reviews)  
+&bull; [Waiting for Upload](#waiting-for-upload)  
 &bull; [Logging](#logging)  
 &bull; [Roadmap](#roadmap)  
 &bull; [License](#license)  
@@ -441,6 +442,13 @@ Date format could be ````dd/mm/yyyy````, ````today````, ````yesterday```` or a n
 ````./itc/bin/itc reviews ... -d yesterday```` - reviews for yesterday (not including today! to include today, use ````yesterday-````)  
 ````./itc/bin/itc reviews ... -d 6-```` - reviews for last 6 days  
 
+Waiting for Upload
+=======
+
+Use ````binary```` command, to setup your app in Waiting for Upload state:  
+````./itc/bin/itc binary -a APP_ID````
+
+It will answer NO to the question "Does you app use cryptography?". If you need to answer YES to that question, you'll need to do it manually.
 
 Logging
 =======  
